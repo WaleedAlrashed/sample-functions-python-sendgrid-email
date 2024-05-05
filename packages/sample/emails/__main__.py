@@ -1,7 +1,8 @@
 from http import HTTPStatus
 import os
+import base64
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 
 def main(args):
     '''
@@ -19,6 +20,9 @@ def main(args):
     user_to = args.get("to")
     user_subject = args.get("subject")
     content = args.get("content")
+    attachment_base64 = args.get("attachment_base64")  # Base64-encoded attachment
+    attachment_filename = args.get("attachment_filename")  # Filename for the attachment
+
 
     if not user_from:
         return {
@@ -41,12 +45,32 @@ def main(args):
             "body" : "no content provided"
         }
 
-    sg = SendGridAPIClient(key)
+    # sg = SendGridAPIClient(key)
+    # message = Mail(
+    #     from_email = user_from,
+    #     to_emails = user_to,
+    #     subject = user_subject,
+    #     html_content = content)
+    # response = sg.send(message)
+
     message = Mail(
-        from_email = user_from,
-        to_emails = user_to,
-        subject = user_subject,
-        html_content = content)
+        from_email=user_from,
+        to_emails=user_to,
+        subject=user_subject,
+        html_content=content)
+
+    # If there's an attachment, process and add it to the message
+     # If there's a base64-encoded attachment, add it to the message
+    if attachment_base64 and attachment_filename:
+        attachment = Attachment()
+        attachment.file_content = FileContent(attachment_base64)
+        attachment.file_type = FileType('image/png')  # Adjust the MIME type according to your file
+        attachment.file_name = FileName(attachment_filename)
+        attachment.disposition = Disposition('attachment')
+        message.attachment = attachment
+   
+
+    sg = SendGridAPIClient(key)
     response = sg.send(message)
 
     if response.status_code != 202:
@@ -58,3 +82,13 @@ def main(args):
         "statusCode" : HTTPStatus.ACCEPTED,
         "body" : "success"
     }
+
+
+# {
+#     "from": "dev@drhero.ae",
+#     "to": "wmr121@gmail.com",
+#     "subject": "Testing",
+#     "content": "<html><body><p style=\"font-family: Arial, sans-serif; font-size: 16px; color: green;\">Hello serverless</p><p style=\"font-family: Arial, sans-serif; font-size: 14px;\">This is a <strong>test</strong> email with <em>HTML</em> content. Visit <a href=\"https://www.google.com\">Google</a>.</p><img src=\"https://picsum.photos/100/200\" alt=\"Random Image\"></body></html>"
+# }
+
+# doctl serverless deploy /Users/waleedalrashed/Documents/dev/workspace/micro_services/sample-functions-python-sendgrid-email --remote-build
