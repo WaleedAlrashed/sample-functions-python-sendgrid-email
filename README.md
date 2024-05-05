@@ -54,3 +54,6 @@ curl -X PUT -H 'Content-Type: application/json' {your-DO-app-url} -d '{"from":"u
 ### Learn More
 
 You can learn more about Functions and App Platform integration in [the official App Platform Documentation](https://www.digitalocean.com/docs/app-platform/).
+
+
+doctl serverless deploy /Users/waleedalrashed/Documents/dev/workspace/micro_services/sample-functions-python-sendgrid-email --remote-build
